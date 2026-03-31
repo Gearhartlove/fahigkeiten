@@ -1,0 +1,4 @@
+interface:
+  display_name: "Obsidian Note to Skill"
+  short_description: "Create a single-file skill from one Obsidian note"
+  default_prompt: "Convert one Obsidian note into a complete single-file skill."
