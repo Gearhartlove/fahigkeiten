@@ -1,0 +1,4 @@
+interface:
+  display_name: "Handoff"
+  short_description: "Draft reviewer handoffs for open PR stories."
+  default_prompt: "Use $handoff to generate a grouped reviewer handoff message for my open, unmerged PR-linked Linear issues."

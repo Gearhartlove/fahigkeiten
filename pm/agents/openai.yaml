@@ -1,0 +1,4 @@
+interface:
+  display_name: "PM"
+  short_description: "Project management combo operations for Linear"
+  default_prompt: "Use PM to run a named Linear project management combo operation."

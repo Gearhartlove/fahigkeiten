@@ -1,0 +1,11 @@
+.system/
+.DS_Store
+
+# Local symlinked skills from other repos
+brainstorming
+linear-cli
+writing-clearly-and-concisely
+writing-plans
+
+# Common cache artifacts
+**/__pycache__/

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kick"
+  short_description: "Kick off Linear tickets and start worktrees"
+  default_prompt: "Use $kick to start work on this Linear ticket."
