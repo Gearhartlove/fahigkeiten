@@ -114,7 +114,7 @@ checks:
       - continuous integration
 ```
 
-Each check `id` is the stable result identity and must be unique within an eval. The optional `check` field names the implementation type for registry lookup. When `check` is omitted, the evaluator uses the `id` value as the check type.
+Each check `id` is the stable result identity and must be unique within an eval. Duplicate check IDs are configuration errors. The optional `check` field names the implementation type for registry lookup. When `check` is omitted, the evaluator uses the `id` value as the check type.
 
 The evaluator maps check implementation types to Elixir modules through a registry:
 
@@ -171,6 +171,7 @@ This keeps V1 portable while preserving a path to automation.
 ## Error Handling
 
 - Missing eval files should produce clear configuration errors.
+- Missing, non-string, or duplicate check IDs should produce clear configuration errors while loading the eval case.
 - Unknown check types should fail the eval setup before scoring starts.
 - Missing run artifacts should produce a run-loading error, not a failed README-quality check.
 - Conditional checks should return `:skip` when their preconditions are not met.

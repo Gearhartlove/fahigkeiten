@@ -450,6 +450,33 @@ defmodule SkillEvaluator.EvalCaseTest do
     end
   end
 
+  test "returns a clear error when expectation check IDs are duplicated" do
+    path = Path.join(System.tmp_dir!(), "duplicate-check-id-eval-case")
+
+    try do
+      File.rm_rf!(path)
+      File.mkdir_p!(path)
+
+      File.write!(Path.join(path, "eval.yml"), """
+      skill: readme-writer
+      name: duplicate-check-id
+      prompt: prompt.md
+      fixture: fixture
+      expectations: expectations.yml
+      """)
+
+      File.write!(Path.join(path, "expectations.yml"), """
+      checks:
+        - id: readme_exists
+        - id: readme_exists
+      """)
+
+      assert {:error, {:duplicate_check_id, "readme_exists"}} = EvalCase.load(path)
+    after
+      File.rm_rf(path)
+    end
+  end
+
   test "artifact runner loads an existing run directory" do
     assert {:ok, eval_case} = EvalCase.load(@eval_path)
     assert {:ok, run} = ArtifactRunner.run(eval_case, run_id: "passing")
@@ -534,8 +561,26 @@ defmodule SkillEvaluator.EvalCase do
     end
   end
 
-  defp fetch_checks(%{"checks" => checks}) when is_list(checks), do: {:ok, checks}
+  defp fetch_checks(%{"checks" => checks}) when is_list(checks), do: validate_check_ids(checks)
   defp fetch_checks(_), do: {:error, {:invalid_expectations, "checks must be a list"}}
+
+  defp validate_check_ids(checks) do
+    Enum.reduce_while(checks, {:ok, MapSet.new()}, fn
+      %{"id" => id}, {:ok, seen} when is_binary(id) ->
+        if MapSet.member?(seen, id) do
+          {:halt, {:error, {:duplicate_check_id, id}}}
+        else
+          {:cont, {:ok, MapSet.put(seen, id)}}
+        end
+
+      _check, _acc ->
+        {:halt, {:error, {:invalid_expectations, "check id must be a string"}}}
+    end)
+    |> case do
+      {:ok, _seen} -> {:ok, checks}
+      error -> error
+    end
+  end
 
   defp fetch_string(config, key) do
     case Map.fetch(config, key) do
