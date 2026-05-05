@@ -3,6 +3,9 @@ defmodule SkillEvaluator.Checks.MentionsDetectedLanguage do
 
   alias SkillEvaluator.CheckResult
 
+  def validate(%{"id" => _id, "language" => language}) when is_binary(language), do: :ok
+  def validate(%{"id" => id}), do: {:error, {:invalid_check, id, "language is required"}}
+
   def run(%{"id" => id, "language" => language}, context) do
     language_atom = String.to_existing_atom(language)
 

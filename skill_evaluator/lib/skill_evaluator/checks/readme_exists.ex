@@ -3,6 +3,8 @@ defmodule SkillEvaluator.Checks.ReadmeExists do
 
   alias SkillEvaluator.CheckResult
 
+  def validate(%{"id" => _id}), do: :ok
+
   def run(%{"id" => id}, context) do
     if File.regular?(context.readme_path) do
       CheckResult.pass(id, "README.md exists")

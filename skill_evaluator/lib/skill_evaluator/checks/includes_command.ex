@@ -3,6 +3,9 @@ defmodule SkillEvaluator.Checks.IncludesCommand do
 
   alias SkillEvaluator.CheckResult
 
+  def validate(%{"id" => _id, "command" => command}) when is_binary(command), do: :ok
+  def validate(%{"id" => id}), do: {:error, {:invalid_check, id, "command is required"}}
+
   def run(%{"id" => id, "command" => command} = spec, context) do
     required_file = spec["when_file_exists"]
 
