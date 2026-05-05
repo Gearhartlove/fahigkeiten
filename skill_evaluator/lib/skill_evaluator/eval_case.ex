@@ -22,6 +22,8 @@ defmodule SkillEvaluator.EvalCase do
     with :ok <- require_file(eval_file),
          {:ok, config} <- Yaml.read_file(eval_file),
          {:ok, eval_case} <- from_config(path, config),
+         :ok <- require_file(eval_case.prompt_path),
+         :ok <- require_directory(eval_case.fixture_dir),
          :ok <- require_file(eval_case.expectations_path),
          {:ok, expectations} <- Yaml.read_file(eval_case.expectations_path),
          {:ok, checks} <- fetch_checks(expectations) do
@@ -79,5 +81,9 @@ defmodule SkillEvaluator.EvalCase do
 
   defp require_file(path) do
     if File.regular?(path), do: :ok, else: {:error, {:missing_file, path}}
+  end
+
+  defp require_directory(path) do
+    if File.dir?(path), do: :ok, else: {:error, {:missing_directory, path}}
   end
 end
