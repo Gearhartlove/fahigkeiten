@@ -5,7 +5,7 @@ defmodule SkillEvaluator.Detector do
     files = %{
       "mix.exs" => File.regular?(Path.join(fixture_dir, "mix.exs")),
       "LICENSE" => license_file?(fixture_dir),
-      ".github/workflows" => File.dir?(Path.join(fixture_dir, ".github/workflows"))
+      ".github/workflows" => workflow_file?(fixture_dir)
     }
 
     %{
@@ -24,6 +24,17 @@ defmodule SkillEvaluator.Detector do
   defp license_file?(fixture_dir) do
     Enum.any?(["LICENSE", "LICENSE.md", "LICENSE.txt"], fn name ->
       File.regular?(Path.join(fixture_dir, name))
+    end)
+  end
+
+  defp workflow_file?(fixture_dir) do
+    workflows_dir = Path.join(fixture_dir, ".github/workflows")
+
+    Enum.any?(["*.yml", "*.yaml"], fn pattern ->
+      workflows_dir
+      |> Path.join(pattern)
+      |> Path.wildcard()
+      |> Enum.any?(&File.regular?/1)
     end)
   end
 end

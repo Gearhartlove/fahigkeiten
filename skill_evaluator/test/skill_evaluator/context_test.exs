@@ -2,6 +2,7 @@ defmodule SkillEvaluator.ContextTest do
   use ExUnit.Case, async: true
 
   alias SkillEvaluator.Context
+  alias SkillEvaluator.Detector
   alias SkillEvaluator.EvalCase
   alias SkillEvaluator.Runners.ArtifactRunner
 
@@ -48,6 +49,41 @@ defmodule SkillEvaluator.ContextTest do
       assert context.readme_path == Path.join(run_dir, "README.md")
     after
       File.rm_rf(root)
+    end
+  end
+
+  test "does not detect GitHub workflows from an empty workflows directory" do
+    root = Path.join(System.tmp_dir!(), "empty-workflows-fixture")
+    workflows_dir = Path.join(root, ".github/workflows")
+
+    try do
+      File.rm_rf!(root)
+      File.mkdir_p!(workflows_dir)
+
+      detected = Detector.detect(root)
+
+      assert detected.files[".github/workflows"] == false
+    after
+      File.rm_rf(root)
+    end
+  end
+
+  test "detects GitHub workflows from YAML workflow files" do
+    for file_name <- ["ci.yml", "release.yaml"] do
+      root = Path.join(System.tmp_dir!(), "workflow-file-fixture-#{file_name}")
+      workflows_dir = Path.join(root, ".github/workflows")
+
+      try do
+        File.rm_rf!(root)
+        File.mkdir_p!(workflows_dir)
+        File.write!(Path.join(workflows_dir, file_name), "name: CI\n")
+
+        detected = Detector.detect(root)
+
+        assert detected.files[".github/workflows"] == true
+      after
+        File.rm_rf(root)
+      end
     end
   end
 end
