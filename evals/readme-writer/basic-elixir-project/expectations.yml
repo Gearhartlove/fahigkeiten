@@ -1,0 +1,26 @@
+checks:
+  - id: readme_exists
+
+  - id: has_project_title
+    title: Basic Elixir Project
+
+  - id: mentions_detected_language
+    language: elixir
+
+  - id: includes_command
+    command: mix test
+    when_file_exists: mix.exs
+
+  - id: does_not_claim_file
+    file: LICENSE
+    forbidden_claims:
+      - MIT
+      - Apache
+      - licensed
+      - license
+
+  - id: does_not_claim_file
+    file: .github/workflows
+    forbidden_claims:
+      - GitHub Actions
+      - continuous integration

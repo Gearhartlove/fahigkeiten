@@ -1,0 +1,5 @@
+skill: readme-writer
+name: basic-elixir-project
+prompt: prompt.md
+fixture: fixture
+expectations: expectations.yml
