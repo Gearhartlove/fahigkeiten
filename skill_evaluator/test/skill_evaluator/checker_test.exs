@@ -62,7 +62,7 @@ defmodule SkillEvaluator.CheckerTest do
       "id" => "no_license_claim",
       "check" => "does_not_claim_file",
       "file" => "LICENSE",
-      "forbidden_claims" => ["MIT", "license"]
+      "forbidden_claims" => ["MIT", "Apache", "license"]
     }
 
     readme_text = """
@@ -71,6 +71,10 @@ defmodule SkillEvaluator.CheckerTest do
     Use submit to create a permit.
 
     No license file is included.
+
+    No MIT license is included.
+
+    Without an Apache license file, no license claims should be inferred.
     """
 
     assert {:ok, [%{status: :pass}]} = Checker.run([spec], %{context | readme_text: readme_text})

@@ -38,7 +38,7 @@ defmodule SkillEvaluator.Checks.DoesNotClaimFile do
   defp unsupported_claim?(text, claim) do
     text
     |> claim_contexts(claim)
-    |> Enum.any?(&(not negative_license_context?(&1, claim)))
+    |> Enum.any?(&(not negative_license_context?(&1)))
   end
 
   defp claim_contexts(text, claim) do
@@ -54,10 +54,7 @@ defmodule SkillEvaluator.Checks.DoesNotClaimFile do
     words != [] and Regex.match?(~r/(^|[^\p{L}\p{N}_])#{pattern}($|[^\p{L}\p{N}_])/iu, text)
   end
 
-  defp negative_license_context?(text, claim) do
-    license_claim?(claim) and
-      Regex.match?(~r/\b(no|without)\b.{0,40}\blicens(e|ed|ing)\b/iu, text)
+  defp negative_license_context?(text) do
+    Regex.match?(~r/\b(no|without)\b.{0,40}\blicens(e|ed|ing)\b/iu, text)
   end
-
-  defp license_claim?(claim), do: String.downcase(claim) in ["license", "licensed", "licensing"]
 end
