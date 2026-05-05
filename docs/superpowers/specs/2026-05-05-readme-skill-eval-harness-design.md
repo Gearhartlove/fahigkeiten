@@ -98,15 +98,25 @@ checks:
     command: mix test
     when_file_exists: mix.exs
 
-  - id: does_not_claim_file
+  - id: no_license_claim
+    check: does_not_claim_file
     file: LICENSE
     forbidden_claims:
       - MIT
       - Apache
       - licensed
+
+  - id: no_ci_claim
+    check: does_not_claim_file
+    file: .github/workflows
+    forbidden_claims:
+      - GitHub Actions
+      - continuous integration
 ```
 
-The evaluator maps `id` values to Elixir modules through a registry:
+Each check `id` is the stable result identity and must be unique within an eval. The optional `check` field names the implementation type for registry lookup. When `check` is omitted, the evaluator uses the `id` value as the check type.
+
+The evaluator maps check implementation types to Elixir modules through a registry:
 
 ```elixir
 %{
@@ -118,7 +128,7 @@ The evaluator maps `id` values to Elixir modules through a registry:
 }
 ```
 
-Each check receives a normalized context and its YAML parameters. Checks return `:pass`, `:fail`, or `:skip` with an explanation.
+Each check receives a normalized context and its YAML parameters. Checks return `:pass`, `:fail`, or `:skip` with an explanation while preserving the YAML `id` as the result identity.
 
 ## Evaluation Context
 
@@ -161,7 +171,7 @@ This keeps V1 portable while preserving a path to automation.
 ## Error Handling
 
 - Missing eval files should produce clear configuration errors.
-- Unknown check IDs should fail the eval setup before scoring starts.
+- Unknown check types should fail the eval setup before scoring starts.
 - Missing run artifacts should produce a run-loading error, not a failed README-quality check.
 - Conditional checks should return `:skip` when their preconditions are not met.
 - Checks should avoid raising for normal evaluation failures.
@@ -172,7 +182,7 @@ V1 should include unit tests for:
 
 - Parsing eval and expectation files.
 - Building context from fixture and run directories.
-- Mapping check IDs to check modules.
+- Mapping check types to check modules.
 - Executing deterministic README checks.
 - Reporting pass, fail, and skip results.
 

@@ -11,7 +11,8 @@ checks:
     command: mix test
     when_file_exists: mix.exs
 
-  - id: does_not_claim_file
+  - id: no_license_claim
+    check: does_not_claim_file
     file: LICENSE
     forbidden_claims:
       - MIT
@@ -19,7 +20,8 @@ checks:
       - licensed
       - license
 
-  - id: does_not_claim_file
+  - id: no_ci_claim
+    check: does_not_claim_file
     file: .github/workflows
     forbidden_claims:
       - GitHub Actions

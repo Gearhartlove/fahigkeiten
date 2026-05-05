@@ -31,7 +31,7 @@
 - Create `skill_evaluator/lib/skill_evaluator/context.ex`: normalized check context.
 - Create `skill_evaluator/lib/skill_evaluator/detector.ex`: conservative fixture fact detection.
 - Create `skill_evaluator/lib/skill_evaluator/check_result.ex`: pass/fail/skip result struct.
-- Create `skill_evaluator/lib/skill_evaluator/check_registry.ex`: maps YAML check IDs to modules.
+- Create `skill_evaluator/lib/skill_evaluator/check_registry.ex`: maps YAML check types to modules.
 - Create `skill_evaluator/lib/skill_evaluator/checker.ex`: executes checks.
 - Create `skill_evaluator/lib/skill_evaluator/checks/readme_exists.ex`: README existence check.
 - Create `skill_evaluator/lib/skill_evaluator/checks/has_project_title.ex`: project-title check.
@@ -159,7 +159,8 @@ checks:
     command: mix test
     when_file_exists: mix.exs
 
-  - id: does_not_claim_file
+  - id: no_license_claim
+    check: does_not_claim_file
     file: LICENSE
     forbidden_claims:
       - MIT
@@ -167,7 +168,8 @@ checks:
       - licensed
       - license
 
-  - id: does_not_claim_file
+  - id: no_ci_claim
+    check: does_not_claim_file
     file: .github/workflows
     forbidden_claims:
       - GitHub Actions
@@ -851,11 +853,11 @@ defmodule SkillEvaluator.CheckerTest do
     failures = Enum.filter(results, &(&1.status == :fail))
     assert Enum.any?(failures, &(&1.id == "has_project_title"))
     assert Enum.any?(failures, &(&1.id == "includes_command"))
-    assert Enum.any?(failures, &(&1.id == "does_not_claim_file" and &1.message =~ "LICENSE"))
-    assert Enum.any?(failures, &(&1.id == "does_not_claim_file" and &1.message =~ ".github/workflows"))
+    assert Enum.any?(failures, &(&1.id == "no_license_claim" and &1.message =~ "LICENSE"))
+    assert Enum.any?(failures, &(&1.id == "no_ci_claim" and &1.message =~ ".github/workflows"))
   end
 
-  test "unknown check IDs fail setup before scoring" do
+  test "unknown check types fail setup before scoring" do
     context = context_for!("passing")
 
     assert {:error, {:unknown_check, "missing_check"}} =
@@ -913,7 +915,7 @@ defmodule SkillEvaluator.CheckRegistry do
     "does_not_claim_file" => SkillEvaluator.Checks.DoesNotClaimFile
   }
 
-  def fetch(id), do: Map.fetch(@checks, id)
+  def fetch(check_type), do: Map.fetch(@checks, check_type)
 end
 ```
 
@@ -930,10 +932,11 @@ defmodule SkillEvaluator.Checker do
   def run(check_specs, context) when is_list(check_specs) do
     Enum.reduce_while(check_specs, {:ok, []}, fn spec, {:ok, results} ->
       with {:ok, id} <- fetch_id(spec),
-           {:ok, module} <- CheckRegistry.fetch(id) do
+           check_type = Map.get(spec, "check", id),
+           {:ok, module} <- CheckRegistry.fetch(check_type) do
         {:cont, {:ok, [module.run(spec, context) | results]}}
       else
-        :error -> {:halt, {:error, {:unknown_check, spec["id"]}}}
+        :error -> {:halt, {:error, {:unknown_check, Map.get(spec, "check", spec["id"])}}}
         {:error, reason} -> {:halt, {:error, reason}}
       end
     end)
@@ -947,6 +950,8 @@ defmodule SkillEvaluator.Checker do
   defp fetch_id(_spec), do: {:error, {:invalid_check, "id is required"}}
 end
 ```
+
+The checker preserves each YAML `id` as the result identity. Registry lookup uses `check` when present and falls back to `id` when `check` is omitted.
 
 - [ ] **Step 5: Implement README existence and title checks**
 
