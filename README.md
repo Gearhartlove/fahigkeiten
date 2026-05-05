@@ -33,7 +33,7 @@ Score a passing artifact:
 mix skill_eval.score ../evals/readme-writer/basic-elixir-project --run passing
 ```
 
-Score a failing artifact:
+Score a failing artifact. This is expected to exit `1` because the artifact intentionally violates README checks:
 
 ```bash
 mix skill_eval.score ../evals/readme-writer/basic-elixir-project --run failing
